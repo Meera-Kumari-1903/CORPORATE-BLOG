@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  name     String
+  email    String @unique
+  password String
+
+  posts     Post[]
+  bookmarks Bookmark[]
+  comments  Comment[]
+  likes     Like[]
+
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id      String @id @default(uuid())
+  title   String
+  content String
+  slug    String @unique
+  views   Int    @default(0)
+  status  String
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  comments  Comment[]
+  likes     Like[]
+  bookmarks Bookmark[]
+
+  createdAt DateTime @default(now())
+}
+
+model Comment {
+  id      String @id @default(uuid())
+  content String
+
+  postId String
+  userId String
+
+  post Post @relation(fields: [postId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Like {
+  id String @id @default(uuid())
+
+  userId String
+  postId String
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+}
+
+model Bookmark {
+  id String @id @default(uuid())
+
+  userId String
+  postId String
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+}
